@@ -1,0 +1,133 @@
+/*
+ Lexer Rules
+ */
+
+ /* Helpers */
+_letter: 'a'-'z' | 'A'-'Z' ;
+_digit: '0'-'9' ;
+_non_zero_digit: '1'-'9' ;
+_non_digit: _letter | '_' ;
+
+/* Words */
+programa: 'p' 'r' 'o' 'g' 'r' 'a' 'm' 'a';
+var: 'v''a''r';
+int: 'i''n''t';
+float: 'f''l''o''a''t';
+print: 'p''r''i''n''t';
+if: 'i''f';
+else: 'e''l''s''e';
+
+/* Symbols */
+comma: ',';
+colon: ':';
+semicolon : ';';
+left_curly: '{';
+right_curly: '}';
+left_round: '(';
+right_round: ')';
+
+star: '*';
+plus: '+';
+minus: '-';
+div: '/';
+equal: '=';
+
+less_than: '<';
+greater_than: '>';
+not_equal: '<' '>';
+
+/* Complex */
+id: ( _non_digit ) { _non_digit | _digit } ;
+string_literal : '"' {.} '"'; 
+_number
+    :   '0'
+    |   _non_zero_digit { _digit };
+int_literal: (_number);
+_number_decimal: (_number) '.' (_number);
+_exponent: ('e' | 'E') ('+' | '-') _number;
+_number_exponent: (_number | _number_decimal) _exponent;
+float_literal
+    :   (_number_decimal)
+    |   (_number_exponent);
+
+
+/* Ignore */
+!whitespace : ' ' | '\t' | '\n' | '\r' ;
+
+/*
+ Parser Rules
+ */
+Programa: programa id semicolon Programa_vars Bloque;
+Programa_vars
+    :   Vars
+    |   empty;
+
+Vars: var Vars_id Vars_more;
+Vars_id: id Vars_id_next colon Tipo semicolon;
+Vars_id_next
+    :   comma id Vars_id_next
+    |   empty;
+Vars_more
+    :   Vars_id Vars_more
+    |   empty;
+
+Bloque: left_curly Bloque_more right_curly;
+Bloque_more
+    :   Estatuto Bloque_more
+    |   empty;
+
+Tipo
+    :   int
+    |   float;
+
+Estatuto
+    :   Asignacion
+    |   Condicion
+    |   Escritura;
+
+Asignacion: id equal Expresion semicolon;
+
+Condicion: if left_round Expresion right_round Bloque Condicion_else semicolon;
+Condicion_else
+    :   else Bloque
+    |   empty;
+
+Escritura: print left_round Escritura_params right_round semicolon;
+Escritura_params
+    :   string_literal Escritura_params_next
+    |   Expresion Escritura_params_next;
+Escritura_params_next
+    :   comma Escritura_params
+    |   empty;
+
+Expresion: Exp Expresion_next;
+Expresion_next
+    :   greater_than Exp
+    |   less_than Exp
+    |   not_equal Exp
+    |   empty;
+
+Exp: Termino Exp_next;
+Exp_next
+    :   plus Exp
+    |   minus Exp
+    |   empty;
+
+Termino: Factor Termino_next;
+Termino_next
+    :   star Termino
+    |   div Termino
+    |   empty;
+
+Factor
+    :   left_round Expresion right_round
+    |   Factor_sign Cte;
+Factor_sign
+    :   plus
+    |   minus
+    |   empty;
+
+Cte
+    :   id
+    |   int_literal
+    |   float_literal;

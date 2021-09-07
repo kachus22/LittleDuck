@@ -1,0 +1,16 @@
+programa test;
+var 
+    a, b, c: int;
+    promedio: float;
+{
+    a = 9;
+    b = 8;
+    c = 7;
+
+    promedio = (a + b + c) / 3.0;
+    if (promedio > 8) {
+        print("El grupo tiene un excelente promedio! Es de ", promedio);
+    } else {
+        print("El grupo tiene un promedio igual o inferior a 8");
+    };
+}
